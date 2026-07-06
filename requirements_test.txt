@@ -3,3 +3,5 @@ pytest-homeassistant-custom-component
 pytest-asyncio
 python-hpilo>=4.4.3
 ruff
+pylint
+pylint-per-file-ignores

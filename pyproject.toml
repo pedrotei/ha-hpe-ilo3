@@ -10,3 +10,49 @@ select = ["E", "F", "W", "I", "UP", "B", "BLE", "SIM", "C4", "RUF"]
 # `hpilo` PyPI library, which otherwise confuses isort's first/third-party
 # detection and splits them into separate import groups.
 known-third-party = ["hpilo"]
+
+[tool.pylint.main]
+load-plugins = ["pylint_per_file_ignores"]
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+    # custom_components/hpilo/ shares its name with the third-party `hpilo`
+    # PyPI library it wraps. Pylint resolves `import hpilo` inside this
+    # package by adding custom_components/ to sys.path, which makes it
+    # shadow the real library with our own __init__.py - so every hpilo.*
+    # attribute access (hpilo.Ilo, hpilo.IloLoginFailed, ...) false-positives
+    # as no-member, and importing coordinator.py from __init__.py
+    # false-positives as a cyclic import. No interpreter/config fixes this
+    # short of renaming the integration's domain, which HA ties to this
+    # folder name.
+    "no-member",
+    "cyclic-import",
+    # HA entity base classes (SwitchEntity, ButtonEntity, ...) declare sync
+    # abstract methods (turn_on, press, ...) that subclasses override with
+    # the async_* variant instead - standard HA pattern, not a real gap.
+    "abstract-method",
+    # Each broad `except Exception` below is deliberate and commented at
+    # the call site (config flow / coordinator error mapping into HA's own
+    # exception types); flagging it here is redundant.
+    "broad-exception-caught",
+    # Trivial 2-3 line overlaps (e.g. constructing the same hpilo.Ilo client
+    # in config_flow.py's connection test and coordinator.py's __init__)
+    # aren't worth extracting into a shared helper.
+    "duplicate-code",
+]
+
+[tool.pylint.design]
+# IloCoordinator.__init__ takes hass, entry, host, username, password, and
+# legacy_ssl - six is reasonable for a coordinator that owns the hpilo
+# client's full connection config; not worth bundling into a config object.
+max-args = 6
+max-positional-arguments = 6
+
+[tool.pylint-per-file-ignores]
+# Test-specific conventions pylint doesn't know about: pytest test functions
+# are self-documenting by name (missing-function-docstring), white-box
+# testing of coordinator internals is intentional (protected-access),
+# `pytest_plugins` is pytest's own required magic name (invalid-name), and
+# the `enable_custom_integrations` fixture is used for its side effect only
+# (unused-argument).
+"/tests/" = "missing-function-docstring,protected-access,invalid-name,unused-argument"

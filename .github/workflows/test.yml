@@ -16,4 +16,5 @@ jobs:
       - run: pip install -r requirements_test.txt
       - run: ruff check .
       - run: ruff format --check .
+      - run: pylint custom_components tests
       - run: pytest

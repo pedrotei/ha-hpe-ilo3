@@ -1,8 +1,12 @@
 {
     "cSpell.words": [
+        "ACPI",
+        "firmwares",
         "hass",
         "homeassistant",
         "hpilo",
-        "RIBCL"
+        "RIBCL",
+        "SECLEVEL",
+        "sigalg"
     ]
 }

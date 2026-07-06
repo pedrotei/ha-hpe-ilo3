@@ -98,8 +98,17 @@ source .venv/bin/activate
 pip install -r requirements_test.txt
 ruff check .
 ruff format --check .
+pylint custom_components tests
 pytest
 ```
+
+Note: this package's own folder is named `hpilo`, same as the third-party
+`hpilo` PyPI library it wraps (Home Assistant requires the folder name to
+match the integration's domain). This collides with how `pylint` and
+`ruff`'s import sorter resolve `import hpilo`, causing false positives
+(`no-member`, `cyclic-import`, import-group splitting) that are suppressed
+in `pyproject.toml` with comments explaining why — if you see one of those
+checks behaving strangely on this repo, that's why.
 
 The test suite (`tests/`) mocks the `hpilo` library throughout — it never
 talks to a real iLO — and covers:

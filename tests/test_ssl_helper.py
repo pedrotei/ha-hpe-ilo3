@@ -17,7 +17,7 @@ def test_uses_tlsv1_1_protocol():
 
 def test_allows_sslv3_fallback():
     context = build_legacy_ilo_ssl_context()
-    assert not (context.options & ssl.OP_NO_SSLv3)
+    assert not context.options & ssl.OP_NO_SSLv3
 
 
 def test_enables_legacy_server_connect():
