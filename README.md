@@ -96,6 +96,8 @@ of protections being turned off, and why.
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements_test.txt
+ruff check .
+ruff format --check .
 pytest
 ```
 

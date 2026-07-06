@@ -1,4 +1,5 @@
 """Power switch for HPE iLO managed hosts."""
+
 from __future__ import annotations
 
 from typing import Any

@@ -1,4 +1,5 @@
 """Power consumption sensor for HPE iLO managed hosts."""
+
 from __future__ import annotations
 
 from homeassistant.components.sensor import (

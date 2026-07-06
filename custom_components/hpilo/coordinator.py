@@ -4,6 +4,7 @@ All hpilo calls are synchronous network I/O (RIBCL/XML over HTTPS), so every
 call into the `hpilo.Ilo` client is routed through
 `hass.async_add_executor_job` to keep the event loop unblocked.
 """
+
 from __future__ import annotations
 
 import logging
@@ -11,7 +12,6 @@ from dataclasses import dataclass
 from datetime import timedelta
 
 import hpilo
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
@@ -83,7 +83,9 @@ class IloCoordinator(DataUpdateCoordinator[IloData]):
             # out just the number for the sensor.
             watts = reading[0] if isinstance(reading, tuple) else reading
         except Exception:  # noqa: BLE001 - not all iLO models/firmwares expose this
-            _LOGGER.debug("get_power_readings not available on %s", self.host, exc_info=True)
+            _LOGGER.debug(
+                "get_power_readings not available on %s", self.host, exc_info=True
+            )
         return IloData(power_state=power_state, power_watts=watts)
 
     async def _async_update_data(self) -> IloData:
@@ -92,7 +94,7 @@ class IloCoordinator(DataUpdateCoordinator[IloData]):
             return await self.hass.async_add_executor_job(self._fetch)
         except hpilo.IloLoginFailed as err:
             raise ConfigEntryNotReady(f"Login to {self.host} failed") from err
-        except Exception as err:  # noqa: BLE001
+        except Exception as err:
             raise UpdateFailed(f"Error communicating with {self.host}: {err}") from err
 
     def set_power(self, on: bool) -> None:

@@ -1,4 +1,5 @@
 """Virtual power button for HPE iLO managed hosts."""
+
 from __future__ import annotations
 
 from homeassistant.components.button import ButtonEntity

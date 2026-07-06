@@ -4,6 +4,7 @@ hpilo itself is mocked throughout - these tests are about our glue code
 (tuple unpacking, error mapping, executor plumbing), not about the hpilo
 library or a real iLO.
 """
+
 from unittest.mock import MagicMock, patch
 
 import hpilo
@@ -30,7 +31,7 @@ def _make_coordinator(hass, mock_ilo_class):
 
 
 async def test_fetch_unpacks_power_reading_tuple(hass):
-    """get_power_readings returns (value, unit) tuples; only the number should surface."""
+    """get_power_readings returns (value, unit) tuples; only the number surfaces."""
     mock_ilo = MagicMock()
     mock_ilo.get_host_power_status.return_value = "ON"
     mock_ilo.get_power_readings.return_value = {"present_power_reading": (123, "Watts")}

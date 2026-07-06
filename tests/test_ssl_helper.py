@@ -4,6 +4,7 @@ These don't touch Home Assistant or the network at all; they just assert
 the SSLContext has the exact flags iLO 3 needs, since a regression here is
 what actually broke connectivity once already (see ssl_helper.py comments).
 """
+
 import ssl
 
 from custom_components.hpilo.ssl_helper import build_legacy_ilo_ssl_context

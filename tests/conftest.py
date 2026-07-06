@@ -1,4 +1,5 @@
 """Shared pytest fixtures for the hpilo integration test suite."""
+
 import pytest
 
 pytest_plugins = "pytest_homeassistant_custom_component"

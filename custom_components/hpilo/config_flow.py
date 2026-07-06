@@ -5,6 +5,7 @@ logging in and reading power status before the entry is created. There's no
 separate options flow - re-adding the integration for the same host (its
 unique_id) is how you'd change settings.
 """
+
 from __future__ import annotations
 
 import logging
@@ -12,7 +13,6 @@ from typing import Any
 
 import hpilo
 import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.data_entry_flow import FlowResult
@@ -78,7 +78,7 @@ class HpiloConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_auth"
             except (hpilo.IloCommunicationError, OSError, TimeoutError):
                 errors["base"] = "cannot_connect"
-            except Exception:  # noqa: BLE001
+            except Exception:
                 _LOGGER.exception("Unexpected error connecting to iLO")
                 errors["base"] = "unknown"
             else:

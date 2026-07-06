@@ -1,0 +1,12 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "BLE", "SIM", "C4", "RUF"]
+
+[tool.ruff.lint.isort]
+# The custom_components/hpilo/ package shares its name with the third-party
+# `hpilo` PyPI library, which otherwise confuses isort's first/third-party
+# detection and splits them into separate import groups.
+known-third-party = ["hpilo"]

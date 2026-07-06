@@ -4,6 +4,7 @@ Sets up one IloCoordinator per config entry (i.e. per physical iLO host) and
 forwards setup to the switch/sensor/button platforms, which each read from
 that shared coordinator instead of talking to the iLO directly.
 """
+
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry

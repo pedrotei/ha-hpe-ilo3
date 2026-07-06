@@ -1,4 +1,5 @@
 """Tests for the HPE iLO config flow: success, error mapping, and dedup."""
+
 from unittest.mock import MagicMock, patch
 
 import hpilo

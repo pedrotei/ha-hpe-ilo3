@@ -2,6 +2,7 @@
 entities backed by a single mocked hpilo.Ilo client, and service calls on
 those entities actually reach the mock.
 """
+
 from unittest.mock import MagicMock, patch
 
 from homeassistant.helpers import entity_registry as er
@@ -26,9 +27,7 @@ def _make_mock_ilo():
         power="ON" if on else "OFF"
     )
     mock_ilo.press_pwr_btn.side_effect = lambda: state.update(power="ON")
-    mock_ilo.get_power_readings.return_value = {
-        "present_power_reading": (150, "Watts")
-    }
+    mock_ilo.get_power_readings.return_value = {"present_power_reading": (150, "Watts")}
     return mock_ilo, state
 
 

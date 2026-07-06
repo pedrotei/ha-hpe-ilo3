@@ -5,6 +5,7 @@ renegotiation the old (pre-RFC 5746) way. OpenSSL 3.x refuses all of that at
 its default security level, so we have to drop to SECLEVEL=0 and explicitly
 re-enable legacy server connections.
 """
+
 from __future__ import annotations
 
 import ssl
