@@ -3,10 +3,12 @@
 # restart HA core so the change is picked up.
 #
 # Restart uses the HA Core REST API (not the supervisor `ha` CLI, which isn't
-# reachable from this SSH add-on without disabling protection mode). Put a
-# long-lived access token in a local .env file next to this script:
+# reachable from this SSH add-on without disabling protection mode). Configure
+# your host and a long-lived access token in a local .env file next to this
+# script (see .env.example):
+#   HA_HOST=192.168.1.19
 #   HA_TOKEN=eyJhbGciOi...
-# Generate one in HA: your profile -> Security -> Long-lived access tokens.
+# Generate the token in HA: your profile -> Security -> Long-lived access tokens.
 #
 # Usage:
 #   ./deploy.sh            # sync files only
@@ -16,15 +18,19 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-HA_HOST="${HA_HOST:-192.168.1.19}"
-HA_PORT="${HA_PORT:-8123}"
-REMOTE_DIR="/config/custom_components/hpilo"
-LOCAL_DIR="${SCRIPT_DIR}/custom_components/hpilo"
-
 if [[ -f "${SCRIPT_DIR}/.env" ]]; then
   # shellcheck disable=SC1091
   source "${SCRIPT_DIR}/.env"
 fi
+
+if [[ -z "${HA_HOST:-}" ]]; then
+  echo "Error: HA_HOST is not set. Create ${SCRIPT_DIR}/.env with HA_HOST=<your HA IP/hostname> (see .env.example)." >&2
+  exit 1
+fi
+
+HA_PORT="${HA_PORT:-8123}"
+REMOTE_DIR="/config/custom_components/hpilo"
+LOCAL_DIR="${SCRIPT_DIR}/custom_components/hpilo"
 
 echo "Syncing ${LOCAL_DIR} -> ${HA_HOST}:${REMOTE_DIR}"
 rsync -av --delete \
