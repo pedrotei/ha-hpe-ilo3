@@ -10,6 +10,15 @@ refuses to negotiate by default. This integration includes a legacy SSL
 context that works around that (see [How the legacy SSL workaround
 works](#how-the-legacy-ssl-workaround-works)).
 
+> [!WARNING]
+> The "legacy SSL" option deliberately downgrades TLS to the weakest
+> settings iLO 3 will accept (TLSv1.1/SSLv3, `SECLEVEL=0`, no certificate
+> verification, pre-RFC 5746 renegotiation). This is **insecure** by modern
+> standards and should only be used on a trusted, isolated management
+> network (e.g. a dedicated management VLAN) — never expose an iLO
+> configured this way directly to the internet or an untrusted network.
+> Use at your own risk.
+
 ## Features
 
 - **Switch** — reflects and controls the managed server's power state
@@ -78,9 +87,8 @@ undoes just enough of that to let the handshake through:
 | `OP_LEGACY_SERVER_CONNECT` | Re-enables the pre-RFC 5746 renegotiation iLO 3 uses; without it the handshake fails with `UNSAFE_LEGACY_RENEGOTIATION_DISABLED`. |
 | Certificate verification disabled | iLO ships a self-signed certificate with no usable hostname. |
 
-**Security note**: this deliberately weakens TLS to the minimum iLO 3
-requires. Only use it over a network you trust (e.g. a dedicated management
-VLAN), the same way you would for the iLO web UI itself.
+See the warning at the top of this README — this table is exactly the set
+of protections being turned off, and why.
 
 ## Development
 
