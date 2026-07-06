@@ -1,14 +1,21 @@
 # HPE iLO for Home Assistant
 
-A Home Assistant custom integration for HPE Integrated Lights-Out (iLO)
-management processors. See your server's power state, turn it on/off, and
-tap the virtual power button, all from Home Assistant.
+A Home Assistant custom integration for HPE server management processors.
+See your server's power state, turn it on/off, and tap the virtual power
+button, all from Home Assistant. Supports two connection types:
 
-Built with older iLO generations (iLO 3 and earlier) specifically in mind:
-they only speak TLSv1.1/SSLv3 with weak ciphers, which modern OpenSSL
-refuses to negotiate by default. This integration includes a legacy SSL
-context that works around that (see [How the legacy SSL workaround
-works](#how-the-legacy-ssl-workaround-works)).
+- **iLO** (2 and up) — real HPE iLO, over its RIBCL/XML protocol via
+  [python-hpilo](https://github.com/seveas/python-hpilo). Built with older
+  generations (iLO 3 and earlier) specifically in mind: they only speak
+  TLSv1.1/SSLv3 with weak ciphers, which modern OpenSSL refuses to negotiate
+  by default. This integration includes a legacy SSL context that works
+  around that (see [How the legacy SSL workaround
+  works](#how-the-legacy-ssl-workaround-works)).
+- **Lights-Out 100 (LO100)** — the much simpler IPMI 2.0 board found on
+  entry-level ProLiant "hundred series" G6/G7 servers (e.g. the DL160 G6)
+  that never had a real iLO at all, over plain IPMI via
+  [pyghmi](https://opendev.org/openstack/pyghmi). No power-draw sensor,
+  since LO100 has no power monitoring at all.
 
 > [!WARNING]
 > The "legacy SSL" option deliberately downgrades TLS to the weakest
@@ -28,17 +35,18 @@ works](#how-the-legacy-ssl-workaround-works)).
   (`button.<name>_power_button`), for a graceful ACPI shutdown/wake instead
   of a forced one.
 - **Sensor** — current power draw in watts (`sensor.<name>_power_draw`), if
-  the iLO firmware exposes it.
+  the connection type/firmware exposes it (iLO only — LO100 never does).
 - Config flow (UI-based setup), no YAML required.
-- One config entry per iLO host; add as many as you have.
+- One config entry per host; add as many as you have, mixing iLO and LO100
+  freely.
 
 ## Requirements
 
 - Home Assistant 2024.1 or newer.
-- Network access from your Home Assistant instance to the iLO's management
-  IP/hostname on port 443.
-- iLO credentials with permission to view/change server power (a dedicated,
-  least-privilege iLO user is recommended over an administrator account).
+- Network access from your Home Assistant instance to the management
+  IP/hostname, on port 443 for iLO or port 623/UDP for LO100.
+- Credentials with permission to view/change server power (a dedicated,
+  least-privilege user is recommended over an administrator account).
 
 ## Installation
 
@@ -59,17 +67,18 @@ works](#how-the-legacy-ssl-workaround-works)).
 Entirely done through the UI:
 
 1. **Settings → Devices & Services → Add Integration → "HPE iLO"**.
-2. Enter:
-   - **Host**: the iLO's IP address or hostname.
-   - **Username** / **Password**.
-   - **Use legacy SSL**: leave this checked for iLO 3 and older. Untick it
-     for iLO 4+ if you'd rather use a normal, verified TLS connection.
+2. Pick a connection type:
+   - **iLO** — enter the host, username, password, and **Use legacy SSL**
+     (leave checked for iLO 3 and older; untick for iLO 4+ if you'd rather
+     use a normal, verified TLS connection).
+   - **Lights-Out 100 (LO100)** — enter the host, username, and password.
+     No SSL option, since LO100 doesn't use TLS at all.
 3. The integration logs in and reads the current power status before
    creating the entry, so connection/auth problems are reported immediately
    in the form instead of failing silently later.
 
-Repeat for each additional iLO host — each gets its own device with its own
-switch, button, and sensor entities.
+Repeat for each additional host — each gets its own device with its own
+switch, button, and (for iLO) sensor entities.
 
 ## How the legacy SSL workaround works
 
@@ -89,6 +98,24 @@ undoes just enough of that to let the handshake through:
 
 See the warning at the top of this README — this table is exactly the set
 of protections being turned off, and why.
+
+## Architecture
+
+`custom_components/hpilo/clients.py` defines a small `PowerControlClient`
+interface (`get_power_state`, `get_power_watts`, `set_power`,
+`press_power_button`) with two implementations, `IloClient` (wraps
+`hpilo.Ilo`) and `IpmiClient` (wraps `pyghmi`'s IPMI command client). The
+coordinator, entities, and config flow only ever talk to that interface, so
+adding a third connection type wouldn't touch the coordinator or entities at
+all.
+
+The IPMI behaviors documented in `clients.py` (power status shape,
+`set_power(wait=False)`, `get_system_power_watts()` failing outright, a bad
+password raising a specific `IpmiException` message) were all confirmed
+against a real Lights-Out 100 board, not just inferred from the pyghmi API -
+notably, `wait=True` will crash on LO100 because it doesn't tolerate the
+transient "BMC initialization in progress" error the board returns right
+after a power transition.
 
 ## Development
 
@@ -110,14 +137,18 @@ match the integration's domain). This collides with how `pylint` and
 in `pyproject.toml` with comments explaining why — if you see one of those
 checks behaving strangely on this repo, that's why.
 
-The test suite (`tests/`) mocks the `hpilo` library throughout — it never
-talks to a real iLO — and covers:
+The test suite (`tests/`) mocks `hpilo`/`pyghmi` throughout — it never talks
+to real hardware — and covers:
 
 - `test_ssl_helper.py` — the legacy SSL context's exact flags.
-- `test_coordinator.py` — polling, error mapping, and power/button control.
-- `test_config_flow.py` — the UI setup flow's success and error paths.
+- `test_clients.py` — IloClient/IpmiClient behavior for both connection
+  types, including the error-mapping edge cases above.
+- `test_coordinator.py` — polling and error-mapping glue, against a faked
+  client (connection-type-agnostic).
+- `test_config_flow.py` — the UI setup flow's menu, success, and error paths
+  for both connection types.
 - `test_integration.py` — end-to-end config entry setup and entity/service
-  behavior.
+  behavior, for both connection types.
 
 ## Disclaimer
 

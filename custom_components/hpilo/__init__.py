@@ -1,17 +1,17 @@
 """The HPE iLO integration.
 
-Sets up one IloCoordinator per config entry (i.e. per physical iLO host) and
-forwards setup to the switch/sensor/button platforms, which each read from
-that shared coordinator instead of talking to the iLO directly.
+Sets up one IloCoordinator per config entry (i.e. per physical iLO/LO100
+host) and forwards setup to the switch/sensor/button platforms, which each
+read from that shared coordinator instead of talking to the host directly.
 """
 
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME, Platform
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
-from .const import CONF_LEGACY_SSL, DEFAULT_LEGACY_SSL, DOMAIN
+from .const import DOMAIN
 from .coordinator import IloCoordinator
 
 PLATFORMS: list[Platform] = [Platform.SWITCH, Platform.SENSOR, Platform.BUTTON]
@@ -19,14 +19,8 @@ PLATFORMS: list[Platform] = [Platform.SWITCH, Platform.SENSOR, Platform.BUTTON]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up HPE iLO from a config entry."""
-    coordinator = IloCoordinator(
-        hass,
-        entry,
-        host=entry.data[CONF_HOST],
-        username=entry.data[CONF_USERNAME],
-        password=entry.data[CONF_PASSWORD],
-        legacy_ssl=entry.data.get(CONF_LEGACY_SSL, DEFAULT_LEGACY_SSL),
-    )
+    coordinator = IloCoordinator(hass, entry)
+    await coordinator.async_setup_client()
     # Raises ConfigEntryNotReady on failure, which schedules an HA retry
     # instead of leaving the entry stuck in a failed setup state.
     await coordinator.async_config_entry_first_refresh()

@@ -3,10 +3,10 @@
   "name": "HPE iLO",
   "codeowners": [],
   "config_flow": true,
-  "documentation": "https://github.com/seveas/python-hpilo",
+  "documentation": "https://github.com/pedrotei/ha-hpe-ilo3",
   "integration_type": "hub",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/seveas/python-hpilo/issues",
-  "requirements": ["python-hpilo>=4.4.3"],
-  "version": "0.1.0"
+  "issue_tracker": "https://github.com/pedrotei/ha-hpe-ilo3/issues",
+  "requirements": ["python-hpilo>=4.4.3", "pyghmi>=1.5.0"],
+  "version": "0.2.0"
 }

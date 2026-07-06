@@ -3,6 +3,13 @@
     "step": {
       "user": {
         "title": "Connect to HPE iLO",
+        "menu_options": {
+          "ilo": "iLO (2 and up) - RIBCL/XML",
+          "ipmi": "Lights-Out 100 (LO100) - plain IPMI, e.g. DL160/DL180 G6/G7"
+        }
+      },
+      "ilo": {
+        "title": "Connect to HPE iLO",
         "description": "Enter the iLO management address and credentials. Enable 'Legacy SSL' for older generations (e.g. iLO 3) that only support TLSv1.1/SSLv3.",
         "data": {
           "host": "Host or IP address",
@@ -10,15 +17,24 @@
           "password": "Password",
           "legacy_ssl": "Use legacy SSL (iLO 3 and older)"
         }
+      },
+      "ipmi": {
+        "title": "Connect to a Lights-Out 100 (LO100) board",
+        "description": "Enter the LO100 management address and credentials. LO100 is a plain IPMI 2.0 interface found on entry-level ProLiant \"hundred series\" servers (e.g. the DL160 G6) that never had a real iLO.",
+        "data": {
+          "host": "Host or IP address",
+          "username": "Username",
+          "password": "Password"
+        }
       }
     },
     "error": {
       "invalid_auth": "Invalid username or password",
-      "cannot_connect": "Failed to connect to the iLO",
+      "cannot_connect": "Failed to connect to the host",
       "unknown": "Unexpected error"
     },
     "abort": {
-      "already_configured": "This iLO host is already configured"
+      "already_configured": "This host is already configured"
     }
   }
 }
