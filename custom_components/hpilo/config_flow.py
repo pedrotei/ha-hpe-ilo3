@@ -56,8 +56,18 @@ def _test_connection(entry_data: dict[str, Any]) -> str:
     Returns the power state on success purely so the caller has proof the
     round trip worked; raises on failure, which async_step_* maps to
     config-flow error codes.
+
+    This client is discarded right after (the coordinator builds its own
+    long-lived one on setup), so it's always closed here - notably, LO100's
+    tiny embedded BMC only supports a handful of concurrent IPMI sessions,
+    and repeated connection tests that never close their session can
+    exhaust that pool and lock out real use for a while.
     """
-    return build_client(entry_data).get_power_state()
+    client = build_client(entry_data)
+    try:
+        return client.get_power_state()
+    finally:
+        client.close()
 
 
 class HpiloConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -115,9 +125,11 @@ class HpiloConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             entry_data = {**user_input, CONF_CONNECTION_TYPE: connection_type}
             try:
                 await self.hass.async_add_executor_job(_test_connection, entry_data)
-            except AuthenticationFailed:
+            except AuthenticationFailed as err:
+                _LOGGER.info("Authentication to %s failed: %s", host, err)
                 errors["base"] = "invalid_auth"
-            except (ConnectionFailed, OSError, TimeoutError):
+            except (ConnectionFailed, OSError, TimeoutError) as err:
+                _LOGGER.info("Could not connect to %s: %s", host, err)
                 errors["base"] = "cannot_connect"
             except Exception:
                 _LOGGER.exception("Unexpected error connecting to %s", host)

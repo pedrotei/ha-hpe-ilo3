@@ -54,6 +54,12 @@ class PowerControlClient(Protocol):
     def press_power_button(self) -> None:
         """Blocking. Momentary press, for a graceful ACPI shutdown/wake."""
 
+    def close(self) -> None:
+        """Blocking. Best-effort release of any session held on the remote
+        host. Default no-op: iLO's RIBCL/XML calls are stateless (a plain
+        HTTPS request per call), so IloClient has nothing to release.
+        """
+
 
 class IloClient(PowerControlClient):
     """Wraps hpilo.Ilo for real HPE iLO (2 and up) management processors."""
@@ -148,6 +154,20 @@ class IpmiClient(PowerControlClient):
         # our button's intended semantics: request a graceful shutdown from
         # the running OS, rather than force the power state.
         self._set_power("shutdown")
+
+    def close(self) -> None:
+        # Deliberately NOT calling self._command.ipmi_session.logout() here.
+        # Confirmed against real hardware: logging out one pyghmi Session
+        # corrupts shared state used by ALL sessions in the process (pyghmi
+        # dispatches every session's IPMI traffic through one shared
+        # socket/thread) - every subsequent Command() against ANY host
+        # started failing with "TypeError: '<' not supported between
+        # instances of 'float' and 'NoneType'" in pyghmi's own raw_command,
+        # for the rest of the process's life. A leaked, never-logged-out
+        # session (which LO100's BMC eventually reaps on its own) is a far
+        # smaller problem than that. This is a pyghmi bug, not something
+        # fixable from here.
+        pass
 
     def _set_power(self, powerstate: str) -> None:
         try:

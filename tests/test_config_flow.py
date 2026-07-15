@@ -76,6 +76,9 @@ async def test_successful_ipmi_setup_creates_entry(hass):
     assert result["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
     assert result["title"] == "192.168.1.20"
     assert result["data"] == {**IPMI_INPUT, "connection_type": "ipmi"}
+    # logout() must never be called - see close()'s docstring in clients.py:
+    # it corrupts shared pyghmi session state for the rest of the process.
+    mock_command.ipmi_session.logout.assert_not_called()
 
 
 async def test_ilo_invalid_auth_shows_error(hass):

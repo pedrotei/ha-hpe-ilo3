@@ -146,6 +146,28 @@ def test_ipmi_client_press_power_button_sends_shutdown():
     mock_command.set_power.assert_called_once_with("shutdown", wait=False)
 
 
+def test_ipmi_client_close_does_not_log_out_the_session():
+    # Confirmed against real hardware: pyghmi's Session.logout() corrupts
+    # shared state used by every session in the process (all sessions share
+    # one dispatch socket/thread) - every subsequent Command() against any
+    # host then fails. A leaked, never-logged-out session (which LO100's
+    # BMC eventually reaps on its own) is far safer, so close() must NOT
+    # call logout().
+    mock_command = MagicMock()
+    client = _make_ipmi_client(mock_command)
+
+    client.close()  # must not raise
+
+    mock_command.ipmi_session.logout.assert_not_called()
+
+
+def test_ilo_client_close_is_a_safe_noop():
+    mock_ilo = MagicMock()
+    client = _make_ilo_client(mock_ilo)
+
+    client.close()  # must not raise, and shouldn't touch the hpilo client
+
+
 def test_ipmi_client_maps_password_error_to_authentication_failed():
     mock_command = MagicMock()
     mock_command.get_power.side_effect = IpmiException("Incorrect password provided")
