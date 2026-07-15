@@ -50,14 +50,23 @@ button, all from Home Assistant. Supports two connection types:
 
 ## Installation
 
+This isn't in the HACS default store (it's not general-purpose enough to
+submit there), so it has to be added as a **custom repository**.
+
 ### HACS (recommended)
 
-1. In HACS, go to **Integrations** → the **⋮** menu → **Custom repositories**.
-2. Add this repository's URL with category **Integration**.
-3. Search for **HPE iLO** in HACS and install it.
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=pedrotei&repository=ha-hpe-ilo3&category=integration)
+
+One-click (if your browser is paired with your HA instance via [my.home-assistant.io](https://my.home-assistant.io)): click the badge above, confirm in HACS, then install.
+
+Manual steps, if you'd rather not use the badge:
+
+1. In HACS, go to **Integrations** → the **⋮** menu (top right) → **Custom repositories**.
+2. Add `https://github.com/pedrotei/ha-hpe-ilo3` with category **Integration**.
+3. Find **HPE iLO** in HACS (search or the newly-added repository) and click **Download**.
 4. Restart Home Assistant.
 
-### Manual
+### Manual (no HACS)
 
 1. Copy `custom_components/hpilo` into your Home Assistant `config/custom_components/` directory.
 2. Restart Home Assistant.
